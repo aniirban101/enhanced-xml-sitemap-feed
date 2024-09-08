@@ -360,11 +360,24 @@ class XMLSF_Admin_Sitemap_News {
 	 * Register settings
 	 */
 	public function register_settings() {
-		register_setting(
+		add_settings_field(
+			'xmlsf_news_ping_google',
+			__('Ping Google', 'xml-sitemap-feed'),
+			array($this, 'ping_google_field'),
 			'xmlsf_news_general',
-			'xmlsf_news_tags',
-			array( 'XMLSF_Admin_Sitemap_News_Sanitize', 'news_tags_settings' )
+			'news_sitemap_general_section'
 		);
+	}
+
+	public function ping_google_field() {
+		$options = get_option('xmlsf_news_tags');
+		$ping_google = isset($options['ping_google']) ? $options['ping_google'] : '';
+		?>
+		<label>
+			<input type="checkbox" name="xmlsf_news_tags[ping_google]" value="1" <?php checked($ping_google, '1'); ?> />
+			<?php _e('Ping Google when the news sitemap is generated', 'xml-sitemap-feed'); ?>
+		</label>
+		<?php
 	}
 
 	/**

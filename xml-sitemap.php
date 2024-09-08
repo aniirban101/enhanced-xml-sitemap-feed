@@ -328,3 +328,88 @@ if ( ! function_exists( 'is_news' ) ) {
 		return $xmlsf->is_news;
 	}
 }
+
+// Register custom meta fields
+function xmlsf_register_post_meta_fields() {
+    register_post_meta('post', 'keywords', array(
+        'show_in_rest' => true,
+        'single' => true,
+        'type' => 'string',
+    ));
+    register_post_meta('post', 'stock_ticker', array(
+        'show_in_rest' => true,
+        'single' => true,
+        'type' => 'string',
+    ));
+}
+add_action('init', 'xmlsf_register_post_meta_fields');
+
+// Add meta box to post edit screen
+function xmlsf_add_custom_meta_box() {
+    add_meta_box(
+        'xmlsf_custom_meta_box',
+        'Article Metadata for News Sitemap',
+        'xmlsf_custom_meta_box_callback',
+        'post',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'xmlsf_add_custom_meta_box');
+
+// Meta box callback function
+function xmlsf_custom_meta_box_callback($post) {
+    wp_nonce_field('xmlsf_custom_meta_box', 'xmlsf_custom_meta_box_nonce');
+    $keywords = get_post_meta($post->ID, 'keywords', true);
+    $stock_ticker = get_post_meta($post->ID, 'stock_ticker', true);
+    ?>
+    <p>
+        <label for="xmlsf_keywords">Keywords (comma-separated):</label><br>
+        <input type="text" id="xmlsf_keywords" name="xmlsf_keywords" value="<?php echo esc_attr($keywords); ?>" style="width:100%">
+    </p>
+    <p>
+        <label for="xmlsf_stock_ticker">Stock Ticker:</label><br>
+        <input type="text" id="xmlsf_stock_ticker" name="xmlsf_stock_ticker" value="<?php echo esc_attr($stock_ticker); ?>" style="width:100%">
+    </p>
+    <?php
+}
+
+// Save meta box data
+function xmlsf_save_custom_meta_box($post_id) {
+    if (!isset($_POST['xmlsf_custom_meta_box_nonce']) || !wp_verify_nonce($_POST['xmlsf_custom_meta_box_nonce'], 'xmlsf_custom_meta_box')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    if (isset($_POST['xmlsf_keywords'])) {
+        update_post_meta($post_id, 'keywords', sanitize_text_field($_POST['xmlsf_keywords']));
+    }
+    if (isset($_POST['xmlsf_stock_ticker'])) {
+        update_post_meta($post_id, 'stock_ticker', sanitize_text_field($_POST['xmlsf_stock_ticker']));
+    }
+}
+add_action('save_post', 'xmlsf_save_custom_meta_box');
+
+// Add columns to the post list table
+function xmlsf_add_custom_columns($columns) {
+    $columns['keywords'] = 'Keywords';
+    $columns['stock_ticker'] = 'Stock Ticker';
+    return $columns;
+}
+add_filter('manage_posts_columns', 'xmlsf_add_custom_columns');
+
+// Populate custom columns in the post list table
+function xmlsf_custom_column_content($column_name, $post_id) {
+    if ($column_name == 'keywords') {
+        echo esc_html(get_post_meta($post_id, 'keywords', true));
+    }
+    if ($column_name == 'stock_ticker') {
+        echo esc_html(get_post_meta($post_id, 'stock_ticker', true));
+    }
+}
+add_action('manage_posts_custom_column', 'xmlsf_custom_column_content', 10, 2);

@@ -49,8 +49,18 @@ if ( have_posts() ) :
 		echo '</news:publication>';
 		echo '<news:publication_date>' . esc_xml( get_date_from_gmt( $post->post_date_gmt, DATE_W3C ) ) . '</news:publication_date>';
 		echo '<news:title>' . esc_xml( apply_filters( 'xmlsf_news_title', get_the_title() ) ) . '</news:title>';
-		echo '<news:keywords>' . esc_xml( implode( ', ', (array) apply_filters( 'xmlsf_news_keywords', array(), $post->ID ) ) ) . '</news:keywords>';
-		echo '<news:stock_tickers>' . esc_xml( implode( ', ', apply_filters( 'xmlsf_news_stock_tickers', array() ) ) ) . '</news:stock_tickers>';
+
+		// Add keywords
+		$keywords = get_post_meta($post->ID, 'keywords', true);
+		if (!empty($keywords)) {
+			echo '<news:keywords>' . esc_xml($keywords) . '</news:keywords>';
+		}
+	
+		// Add stock_tickers
+		$stock_ticker = get_post_meta($post->ID, 'stock_ticker', true);
+		if (!empty($stock_ticker)) {
+			echo '<news:stock_tickers>' . esc_xml($stock_ticker) . '</news:stock_tickers>';
+		}
 
 		do_action( 'xmlsf_news_tags_inner', $post );
 
@@ -71,5 +81,8 @@ if ( empty( $did_posts ) ) {
 	// No posts done? Then do at least the homepage to prevent error message in Google Search Console.
 	echo '<url><loc>' . esc_url( home_url() ) . '</loc></url>' . PHP_EOL;
 }
+
+// Ping search engines after sitemap generation
+do_action('xmlsf_news_sitemap_generated');
 ?>
 </urlset>

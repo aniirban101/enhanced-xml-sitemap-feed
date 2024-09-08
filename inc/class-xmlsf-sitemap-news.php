@@ -45,6 +45,9 @@ class XMLSF_Sitemap_News {
 
 		// Add nnes sitemap to the index.
 		add_filter( 'xmlsf_sitemap_index_after', array( $this, 'news_in_index' ) );
+
+		// Action to ping search engines after sitemap generation
+        add_action('xmlsf_news_sitemap_generated', array($this, 'ping_search_engines'));
 	}
 
 	/**
@@ -214,8 +217,29 @@ class XMLSF_Sitemap_News {
 		remove_all_actions( 'widgets_init' );
 		remove_all_actions( 'wp_footer' );
 
+		$request['meta_query'] = array(
+            'relation' => 'OR',
+            array(
+                'key' => 'keywords',
+                'compare' => 'EXISTS',
+            ),
+            array(
+                'key' => 'stock_ticker',
+                'compare' => 'EXISTS',
+            ),
+        );
+
 		return $request;
 	}
+
+	public function ping_search_engines() {
+        $options = get_option('xmlsf_news_tags', array());
+        if (!empty($options['ping_google'])) {
+            $news_sitemap_url = xmlsf_sitemap_url('news');
+            wp_remote_get('http://www.google.com/ping?sitemap=' . urlencode($news_sitemap_url));
+        }
+        do_action('xmlsf_news_update');
+    }
 
 	/**
 	 * Add sitemap rewrite rules
