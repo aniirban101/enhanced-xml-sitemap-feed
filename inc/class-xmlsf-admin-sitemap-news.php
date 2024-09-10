@@ -29,9 +29,6 @@ class XMLSF_Admin_Sitemap_News
 	 */
 	public function __construct()
 	{
-		// META.
-		add_action('add_meta_boxes', array($this, 'add_meta_box'));
-		add_action('save_post', array($this, 'save_metadata'));
 
 		// SETTINGS.
 		add_action('admin_init', array($this, 'register_settings'));
@@ -155,86 +152,6 @@ class XMLSF_Admin_Sitemap_News
 		}
 	}
 
-	/**
-	 * META BOXES
-	 */
-
-	/**
-	 * Add a News Sitemap meta box to the side column
-	 */
-	public function add_meta_box()
-	{
-		$news_tags = get_option('xmlsf_news_tags');
-		$news_post_types = !empty($news_tags['post_type']) && is_array($news_tags['post_type']) ? $news_tags['post_type'] : array('post');
-
-		// Only include metabox on post types that are included.
-		foreach ($news_post_types as $post_type) {
-			add_meta_box(
-				'xmlsf_news_section',
-				__('Google News', 'xml-sitemap-feed'),
-				array($this, 'meta_box'),
-				$post_type,
-				'side'
-			);
-		}
-	}
-
-	/**
-	 * Add a News Sitemap meta box to the side column
-	 *
-	 * @param obj $post The post object.
-	 */
-	public function meta_box($post)
-	{
-		// Use nonce for verification.
-		wp_nonce_field(XMLSF_BASENAME, '_xmlsf_news_nonce');
-
-		// Use get_post_meta to retrieve an existing value from the database and use the value for the form.
-		$exclude = 'private' == $post->post_status || get_post_meta($post->ID, '_xmlsf_news_exclude', true);
-		$disabled = 'private' == $post->post_status;
-
-		// The actual fields for data entry.
-		include XMLSF_DIR . '/views/admin/meta-box-news.php';
-	}
-
-	/**
-	 * When the post is saved, save our meta data
-	 *
-	 * @param int $post_id The post ID.
-	 */
-	public function save_metadata($post_id)
-	{
-		// Verify nonce and user privileges.
-		if (
-			!isset($_POST['_xmlsf_news_nonce']) ||
-			!wp_verify_nonce(wp_unslash(sanitize_key($_POST['_xmlsf_news_nonce'])), XMLSF_BASENAME) ||
-			!current_user_can('edit_post', $post_id)
-		) {
-			return;
-		}
-
-		// Save custom description
-		if (isset($_POST['xmlsf_news_custom_description'])) {
-			update_post_meta($post_id, '_xmlsf_news_custom_description', sanitize_textarea_field($_POST['xmlsf_news_custom_description']));
-		}
-
-		// Save keywords
-		if (isset($_POST['xmlsf_news_keywords'])) {
-			update_post_meta($post_id, '_xmlsf_news_keywords', sanitize_text_field($_POST['xmlsf_news_keywords']));
-		}
-
-		// Save stock tickers
-		if (isset($_POST['xmlsf_news_stock_tickers'])) {
-			update_post_meta($post_id, '_xmlsf_news_stock_tickers', sanitize_text_field($_POST['xmlsf_news_stock_tickers']));
-		}
-
-		// _xmlsf_news_exclude
-		if (empty($_POST['xmlsf_news_exclude'])) {
-			delete_post_meta($post_id, '_xmlsf_news_exclude');
-		} else {
-			update_post_meta($post_id, '_xmlsf_news_exclude', '1');
-		}
-	}
 
 	/**
 	 * SETTINGS

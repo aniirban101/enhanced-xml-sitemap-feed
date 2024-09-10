@@ -368,6 +368,11 @@ function xmlsf_register_post_meta_fields()
 		'single' => true,
 		'type' => 'string',
 	));
+	register_post_meta('post', 'description', array(
+		'show_in_rest' => true,
+		'single' => true,
+		'type' => 'string',
+	));
 }
 add_action('init', 'xmlsf_register_post_meta_fields');
 
@@ -391,6 +396,7 @@ function xmlsf_custom_meta_box_callback($post)
 	wp_nonce_field('xmlsf_custom_meta_box', 'xmlsf_custom_meta_box_nonce');
 	$keywords = get_post_meta($post->ID, 'keywords', true);
 	$stock_ticker = get_post_meta($post->ID, 'stock_ticker', true);
+	$description = get_post_meta($post->ID, 'description', true);
 	?>
 	<p>
 		<label for="xmlsf_keywords">Keywords (comma-separated):</label><br>
@@ -401,6 +407,11 @@ function xmlsf_custom_meta_box_callback($post)
 		<label for="xmlsf_stock_ticker">Stock Ticker:</label><br>
 		<input type="text" id="xmlsf_stock_ticker" name="xmlsf_stock_ticker" value="<?php echo esc_attr($stock_ticker); ?>"
 			style="width:100%">
+	</p>
+	<p>
+		<label for="xmlsf_description">Description:</label><br>
+		<textarea id="xmlsf_description" name="xmlsf_description" style="width:100%"
+			rows="3"><?php echo esc_textarea($description); ?></textarea>
 	</p>
 	<?php
 }
@@ -424,6 +435,9 @@ function xmlsf_save_custom_meta_box($post_id)
 	if (isset($_POST['xmlsf_stock_ticker'])) {
 		update_post_meta($post_id, 'stock_ticker', sanitize_text_field($_POST['xmlsf_stock_ticker']));
 	}
+	if (isset($_POST['xmlsf_description'])) {
+		update_post_meta($post_id, 'description', sanitize_textarea_field($_POST['xmlsf_description']));
+	}
 }
 add_action('save_post', 'xmlsf_save_custom_meta_box');
 
@@ -432,6 +446,7 @@ function xmlsf_add_custom_columns($columns)
 {
 	$columns['keywords'] = 'Keywords';
 	$columns['stock_ticker'] = 'Stock Ticker';
+	$columns['description'] = 'Description';
 	return $columns;
 }
 add_filter('manage_posts_columns', 'xmlsf_add_custom_columns');
@@ -444,6 +459,9 @@ function xmlsf_custom_column_content($column_name, $post_id)
 	}
 	if ($column_name == 'stock_ticker') {
 		echo esc_html(get_post_meta($post_id, 'stock_ticker', true));
+	}
+	if ($column_name == 'description') {
+		echo esc_html(get_post_meta($post_id, 'description', true));
 	}
 }
 add_action('manage_posts_custom_column', 'xmlsf_custom_column_content', 10, 2);

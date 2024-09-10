@@ -151,7 +151,7 @@ class XMLSF_Meta_Tags
      */
     private function get_description($post)
     {
-        $description = get_post_meta($post->ID, '_xmlsf_news_custom_description', true);
+        $description = get_post_meta($post->ID, 'description', true);
         if (empty($description)) {
             $description = wp_trim_words($post->post_content, 30);
         }
