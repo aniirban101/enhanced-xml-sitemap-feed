@@ -166,7 +166,8 @@ class XMLSF_Meta_Tags
      */
     private function get_keywords($post)
     {
-        return get_post_meta($post->ID, 'keywords', true);
+        $keywords = get_post_meta($post->ID, 'keywords', true);
+        return $keywords ? $keywords : '';
     }
 
     /**
@@ -177,7 +178,8 @@ class XMLSF_Meta_Tags
      */
     private function get_stock_tickers($post)
     {
-        return get_post_meta($post->ID, 'stock_ticker', true);
+        $stock_tickers = get_post_meta($post->ID, 'stock_ticker', true);
+        return $stock_tickers ? $stock_tickers : '';
     }
 
     /**

@@ -136,12 +136,18 @@ function xmlsf_init()
 	function xmlsf_add_meta_tags()
 	{
 		global $post;
-		if (is_singular()) {
+		if (is_singular() && $post) {
 			$meta_tags = new XMLSF_Meta_Tags();
 			$meta_tags->generate_all_tags($post);
 		}
 	}
 	add_action('wp_head', 'xmlsf_add_meta_tags', 1);
+
+	function xmlsf_load_meta_tags_class()
+	{
+		require_once XMLSF_DIR . '/inc/class-xmlsf-meta-tags.php';
+	}
+	add_action('init', 'xmlsf_load_meta_tags_class');
 }
 
 /**
