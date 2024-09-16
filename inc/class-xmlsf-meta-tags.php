@@ -114,8 +114,8 @@ class XMLSF_Meta_Tags
             'datePublished' => get_the_date('c', $post->ID),
             'dateModified' => get_the_modified_date('c', $post->ID),
             'author' => array(
-                '@type' => 'Person',
-                'name' => get_the_author_meta('display_name', $post->post_author)
+                '@type' => 'Organization',
+                'name' => get_bloginfo('name')
             ),
             'publisher' => array(
                 '@type' => 'Organization',
@@ -129,7 +129,11 @@ class XMLSF_Meta_Tags
             'mainEntityOfPage' => array(
                 '@type' => 'WebPage',
                 '@id' => get_permalink($post->ID)
-            )
+            ),
+            'keywords' => $this->get_keywords($post),
+            'wordCount' => str_word_count(strip_tags($post->post_content)),
+            'isAccessibleForFree' => 'True',
+            'inLanguage' => get_locale(),
         );
 
         $image = $this->get_post_image($post);
@@ -138,6 +142,7 @@ class XMLSF_Meta_Tags
                 '@type' => 'ImageObject',
                 'url' => $image
             );
+            $schema['thumbnailUrl'] = wp_get_attachment_image_src(get_post_thumbnail_id($post->ID), 'thumbnail')[0];
         }
 
         echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . '</script>' . "\n";
