@@ -63,14 +63,6 @@ echo '<?xml version="1.0" encoding="' . esc_xml(esc_attr(get_bloginfo('charset')
 				echo '<news:stock_tickers>' . esc_xml($stock_ticker) . '</news:stock_tickers>';
 			}
 
-			// Add description
-			$description = get_post_meta($post->ID, 'description', true);
-			if (!empty($description)) {
-				echo '<news:description>' . esc_xml($description) . '</news:description>';
-			} else {
-				echo '<news:description>' . esc_xml(wp_trim_words($post->post_content, 30)) . '</news:description>';
-			}
-
 			do_action('xmlsf_news_tags_inner', $post);
 
 			echo '</news:news>';
